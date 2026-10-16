@@ -1,0 +1,105 @@
+name: Build Blade (mod jars, BladeSMP plugin, Windows installer)
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  mod:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mc: ['1.21.11', '1.21.4', '1.21.1']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.14
+      - name: Build the mod
+        working-directory: mod
+        run: gradle build -Pmc=${{ matrix.mc }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: blade-client-${{ matrix.mc }}
+          path: mod/build/libs/*+${{ matrix.mc }}.jar
+
+  plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.14
+      - name: Build the BladeSMP plugin
+        working-directory: bladesmp-plugin
+        run: gradle build -Pserver=1.21.11
+      - name: Put the server kit together
+        run: |
+          mkdir -p kit/BladeSMP-server/plugins kit/BladeSMP-server/resourcepack
+          cp bladesmp-plugin/build/libs/BladeSMP.jar kit/BladeSMP-server/plugins/
+          cp server-bladesmp/setup-server.ps1 server-bladesmp/README.md kit/BladeSMP-server/
+          cp server-bladesmp/resourcepack/BladeSMP-pack.zip kit/BladeSMP-server/resourcepack/
+          cp server-bladesmp/resourcepack/BladeSMP-pack.zip kit/BladeSMP-pack.zip
+          cd kit && zip -r BladeSMP-server-kit.zip BladeSMP-server
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BladeSMP-server-kit
+          path: |
+            kit/BladeSMP-server-kit.zip
+            kit/BladeSMP-pack.zip
+
+  installer:
+    needs: mod
+    if: ${{ !cancelled() }}
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: blade-client-*
+          merge-multiple: true
+          path: bundled
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - name: Build the installer
+        run: npm run dist
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Blade-Client-Setup
+          path: dist/Blade-Client-Setup.exe
+
+  release:
+    needs: [installer, plugin]
+    if: ${{ !cancelled() && startsWith(github.ref, 'refs/tags/v') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: Blade-Client-Setup
+          path: release-files
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: BladeSMP-server-kit
+          path: release-files
+      - name: Publish a release (runs when you push a tag like v1.0.0)
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-files/*

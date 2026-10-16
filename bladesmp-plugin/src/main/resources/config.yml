@@ -1,0 +1,30 @@
+# BladeSMP settings. Run /blade reload after changing anything here.
+
+# Player kills needed for each upgrade (3 upgrades: level 1, 2 and 3 = max)
+kills-per-upgrade: 5
+
+# The same victim only counts once per this many seconds, so friends can't farm each other
+same-victim-cooldown-seconds: 600
+
+ability:
+  # Right click with the blade to use it
+  cloak-seconds: 5
+  cooldown-seconds:
+    1: 30
+    2: 25
+    3: 20
+  # Level 2 and 3: while cloaked, right click again to throw a mini blade
+  miniblade-count: 3
+  miniblade-damage: 1.0      # 1.0 = half a heart per blade
+  # Level 3: black hole
+  blackhole:
+    radius: 10
+    stun-seconds: 10
+    zone-seconds: 10
+
+# Sends players the Blade textures (black, blood, black and red fade).
+# Upload resourcepack/BladeSMP-pack.zip somewhere public (a GitHub release works) and put the link here.
+resource-pack:
+  url: ""
+  sha1: "6d7d061ea81fa59cacdbbe61383df5c8e3208d0d"
+  required: false

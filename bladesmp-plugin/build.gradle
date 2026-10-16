@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+}
+
+group = 'dev.blade'
+version = '1.1.0'
+
+// Build against another Paper version with:  gradle build -Pserver=1.21.4
+def server = project.findProperty('server') ?: '1.21.11'
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+}
+
+dependencies {
+    compileOnly "io.papermc.paper:paper-api:${server}-R0.1-SNAPSHOT"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+    options.encoding = 'UTF-8'
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('plugin.yml') {
+        expand 'version': project.version
+    }
+}
+
+jar {
+    archiveFileName = 'BladeSMP.jar'
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "blade",
+  "version": "${version}",
+  "name": "Blade Client",
+  "description": "Blade PvP HUD, red and black theme, wings and blade cosmetics, friends and chat.",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["dev.blade.BladeClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.7",
+    "minecraft": "~${mc}",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

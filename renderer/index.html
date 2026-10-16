@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:">
+  <title>Blade client</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="play" data-theme="blade">
+  <canvas id="embers" aria-hidden="true"></canvas>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="g-left" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" style="stop-color:var(--bl-a)"/><stop offset="1" style="stop-color:var(--bl-b)"/>
+      </linearGradient>
+      <linearGradient id="g-right" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" style="stop-color:var(--br-a)"/><stop offset="1" style="stop-color:var(--br-b)"/>
+      </linearGradient>
+      <linearGradient id="g-guard" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" style="stop-color:var(--bg-edge)"/><stop offset="0.5" style="stop-color:var(--bg-mid)"/><stop offset="1" style="stop-color:var(--bg-edge)"/>
+      </linearGradient>
+      <symbol id="blade-art" viewBox="0 0 200 640">
+        <polygon points="100,4 100,448 78,448 78,72" fill="url(#g-left)"/>
+        <polygon points="100,4 122,72 122,448 100,448" fill="url(#g-right)"/>
+        <rect x="96" y="92" width="8" height="336" rx="4" fill="#000000" opacity="0.82"/>
+        <path d="M100 444 L170 428 L192 452 L176 472 L120 476 L100 486 L80 476 L24 472 L8 452 L30 428 Z" fill="url(#g-guard)"/>
+        <polygon points="100,450 109,462 100,474 91,462" fill="#000000"/>
+        <rect x="91" y="486" width="18" height="98" fill="#150000"/>
+        <path d="M91 500 L109 508 M91 516 L109 524 M91 532 L109 540 M91 548 L109 556 M91 564 L109 572" stroke="#d40000" stroke-width="2.5" fill="none"/>
+        <path d="M100 582 L118 600 L100 632 L82 600 Z" fill="url(#g-guard)"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="mini" aria-hidden="true"><use href="#blade-art"/></svg>
+      <span>Blade client</span>
+    </div>
+    <nav class="tabs" aria-label="Sections">
+      <button type="button" data-page="play" aria-selected="true">Play</button>
+      <button type="button" data-page="premium" aria-selected="false">Premium</button>
+      <button type="button" data-page="cracked" aria-selected="false">Cracked</button>
+      <button type="button" data-page="mods" aria-selected="false">Mods</button>
+      <button type="button" data-page="game" aria-selected="false">Game</button>
+      <button type="button" data-page="cosmetics" aria-selected="false">Cosmetics</button>
+      <button type="button" data-page="friends" aria-selected="false">Friends</button>
+      <button type="button" data-page="chat" aria-selected="false">Chat</button>
+      <button type="button" data-page="client" aria-selected="false">Client</button>
+      <button type="button" data-page="logs" aria-selected="false">Logs</button>
+    </nav>
+    <div class="win">
+      <button id="btn-min" type="button" aria-label="Minimize">&minus;</button>
+      <button id="btn-close" type="button" aria-label="Close">&times;</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="blade" aria-hidden="true">
+      <svg viewBox="0 0 200 640" preserveAspectRatio="xMidYMid meet"><use href="#blade-art"/></svg>
+    </div>
+
+    <section id="page-play" class="page play">
+      <div class="left">
+        <div>
+          <span class="label">Account</span>
+          <div class="chip"><strong id="chip-name">Not signed in</strong><span id="chip-type" class="tag">Premium</span></div>
+          <button id="chip-change" class="link" type="button" data-goto="premium">Change account</button>
+        </div>
+        <div>
+          <label class="label" for="version">Version</label>
+          <select id="version"></select>
+          <p class="small">Loader: <span id="loader-text">Vanilla</span> <button class="link" type="button" data-goto="mods">Mods</button></p>
+        </div>
+      </div>
+      <div class="right">
+        <button id="play" class="play-btn" type="button">Play</button>
+        <button id="smp" class="btn smp-btn" type="button">Join BladeSMP</button>
+        <progress id="bar" max="100" value="0" hidden></progress>
+        <p id="status" class="status" role="status"></p>
+      </div>
+    </section>
+
+    <section id="page-premium" class="page narrow" hidden>
+      <h1>Premium account</h1>
+      <p class="lead">Sign in with Microsoft to play on regular servers with your own Minecraft account.</p>
+      <div class="row">
+        <div><div class="name">Microsoft account</div><div class="desc" id="premium-status">Not signed in</div></div>
+        <button id="btn-login" class="btn" type="button">Sign in with Microsoft</button>
+        <button id="btn-logout" class="btn" type="button" hidden>Sign out</button>
+      </div>
+      <div class="row">
+        <div><div class="name">Play with this account</div><div class="desc">Blade uses the account you pick when you press Play.</div></div>
+        <button id="use-premium" class="btn" type="button">Use Premium</button>
+      </div>
+      <p class="small">Blade remembers your sign-in on this computer, stored encrypted by Windows. Press Sign out to forget it.</p>
+    </section>
+
+    <section id="page-cracked" class="page narrow" hidden>
+      <h1>Cracked account</h1>
+      <p class="lead">Pick any name. It works in singleplayer, on LAN, and on servers that allow offline-mode players. It can't join premium servers.</p>
+      <div class="row">
+        <div><label class="name" for="username">Username</label><div class="desc" id="username-hint">3 to 16 letters, numbers, or underscores.</div></div>
+        <input id="username" type="text" maxlength="16" placeholder="Steve" data-setting="username" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="row">
+        <div><div class="name">Play with this account</div><div class="desc">Blade uses the account you pick when you press Play.</div></div>
+        <button id="use-cracked" class="btn" type="button">Use Cracked</button>
+      </div>
+    </section>
+
+    <section id="page-mods" class="page narrow" hidden>
+      <h1>Mods</h1>
+      <p class="lead">Mods for Minecraft <strong id="mods-version"></strong>. Every version has its own mods folder.</p>
+      <div class="row">
+        <div><label class="name" for="loader">Mod loader</label><div class="desc" id="loader-note">Fabric loads mods in Minecraft 1.14 and newer.</div></div>
+        <select id="loader" data-setting="loader">
+          <option value="vanilla">Vanilla (no mods)</option>
+          <option value="fabric">Fabric</option>
+        </select>
+      </div>
+
+      <h2>Add mods</h2>
+      <div class="actions">
+        <button id="mods-add" class="btn" type="button">Add mod files</button>
+        <button id="mods-folder" class="btn" type="button">Open mods folder</button>
+        <button id="mods-pack" class="btn primary" type="button">Install performance pack</button>
+        <button id="mods-blade" class="btn primary" type="button">Install Blade mod</button>
+      </div>
+      <p class="small">The Blade mod (Minecraft 1.21.1, 1.21.4 and 1.21.11) adds the Right Shift PvP HUD, red and black menus, wings, blade, friends and chat in game. It needs Fabric and Fabric API, which the performance pack installs.</p>
+      <p class="small">The pack adds Fabric API, Sodium, Sodium Extra, Lithium, FerriteCore, Entity Culling, More Culling, ImmediatelyFast, ModernFix, Krypton, C2ME, Noisium, ScalableLux, Dynamic FPS, MemoryLeakFix, and BadOptimizations from Modrinth. Any mod without a build for your version is skipped.</p>
+      <div id="mods-browse">
+        <div class="search">
+          <input id="mods-query" type="text" placeholder="Search Modrinth, for example Sodium" spellcheck="false">
+          <button id="mods-search" class="btn" type="button">Search</button>
+        </div>
+        <div id="mods-results"></div>
+      </div>
+      <p id="mods-note" class="small"></p>
+
+      <h2>Installed <span id="mods-count"></span></h2>
+      <div id="mods-list"></div>
+      <p id="mods-status" class="small"></p>
+    </section>
+
+    <section id="page-game" class="page narrow" hidden>
+      <h1>Game settings</h1>
+      <p class="lead">Video and performance options. Blade writes them to the game before every launch.</p>
+      <div class="row">
+        <div><div class="name">Apply at launch</div><div class="desc">Turn off to keep whatever you set inside Minecraft.</div></div>
+        <input class="switch" type="checkbox" data-setting="applyVideo" aria-label="Apply video settings at launch">
+      </div>
+      <div class="row">
+        <div><div class="name">Fullscreen</div></div>
+        <input class="switch" type="checkbox" data-setting="fullscreen" aria-label="Fullscreen">
+      </div>
+      <div class="row">
+        <div><div class="name">Window size</div><div class="desc">Used when fullscreen is off.</div></div>
+        <div class="res"><input type="number" min="320" max="7680" data-setting="width" aria-label="Width"> <span>×</span> <input type="number" min="240" max="4320" data-setting="height" aria-label="Height"></div>
+      </div>
+      <div class="row">
+        <div><div class="name">Max FPS</div></div>
+        <select data-setting="maxFps" data-number aria-label="Max FPS">
+          <option value="30">30</option><option value="60">60</option><option value="120">120</option>
+          <option value="144">144</option><option value="165">165</option><option value="240">240</option>
+          <option value="260">Unlimited</option>
+        </select>
+      </div>
+      <div class="row">
+        <div><div class="name">Render distance</div><div class="desc">Lower is faster.</div></div>
+        <div class="slider"><input type="range" min="2" max="32" step="1" data-setting="renderDistance" aria-label="Render distance"><output data-for="renderDistance" data-unit="chunks"></output></div>
+      </div>
+      <div class="row">
+        <div><div class="name">VSync</div></div>
+        <input class="switch" type="checkbox" data-setting="vsync" aria-label="VSync">
+      </div>
+      <div class="row">
+        <div><div class="name">Particles</div></div>
+        <select data-setting="particles" data-number aria-label="Particles">
+          <option value="0">All</option><option value="1">Decreased</option><option value="2">Minimal</option>
+        </select>
+      </div>
+      <div class="row">
+        <div><div class="name">Entity shadows</div></div>
+        <input class="switch" type="checkbox" data-setting="entityShadows" aria-label="Entity shadows">
+      </div>
+      <div class="row">
+        <div><div class="name">Java tuning</div><div class="desc">Performance uses garbage collection flags that smooth out frame spikes.</div></div>
+        <select data-setting="jvmPreset" aria-label="Java tuning">
+          <option value="performance">Performance</option><option value="default">Default</option>
+        </select>
+      </div>
+    </section>
+
+    <section id="page-cosmetics" class="page narrow" hidden>
+      <h1>Cosmetics</h1>
+      <p class="lead">Pick your look. This is your starting look. The in-game Blade mod draws it, and you can change it in game from the Right Shift menu (the in-game choice wins afterwards). Cape and emotes aren't drawn in game yet.</p>
+      <div class="row">
+        <div><div class="name">Wings</div></div>
+        <select data-setting="wings" aria-label="Wings">
+          <option value="none">None</option><option value="blade">Blade</option><option value="crimson">Crimson</option><option value="shadow">Shadow</option>
+        </select>
+      </div>
+      <div class="row">
+        <div><div class="name">Blade</div></div>
+        <select data-setting="bladeItem" aria-label="Blade">
+          <option value="none">None</option><option value="blade">Blade</option><option value="crimson">Crimson</option><option value="shadow">Shadow</option>
+        </select>
+      </div>
+      <div class="row">
+        <div><div class="name">Aura</div></div>
+        <select data-setting="aura" aria-label="Aura">
+          <option value="none">None</option><option value="flame">Flame</option><option value="ember">Ember</option>
+          <option value="frost">Frost</option><option value="void">Void</option><option value="blood">Blood</option><option value="blade">Blade</option>
+        </select>
+      </div>
+      <div class="row">
+        <div><div class="name">Cape</div></div>
+        <select data-setting="cape" aria-label="Cape">
+          <option value="none">None</option><option value="blade">Blade</option><option value="crimson">Crimson</option><option value="shadow">Shadow</option>
+        </select>
+      </div>
+      <div class="row">
+        <div><div class="name">Trail</div></div>
+        <select data-setting="trail" aria-label="Trail">
+          <option value="none">None</option><option value="spark">Spark</option><option value="smoke">Smoke</option><option value="slash">Slash</option>
+        </select>
+      </div>
+      <h2>Emotes</h2>
+      <div class="row">
+        <div><div class="name">Emote 1</div></div>
+        <select data-setting="emote1" aria-label="Emote 1">
+          <option value="wave">Wave</option><option value="gg">GG</option><option value="salute">Salute</option>
+          <option value="taunt">Taunt</option><option value="laugh">Laugh</option><option value="bow">Bow</option>
+        </select>
+      </div>
+      <div class="row">
+        <div><div class="name">Emote 2</div></div>
+        <select data-setting="emote2" aria-label="Emote 2">
+          <option value="wave">Wave</option><option value="gg">GG</option><option value="salute">Salute</option>
+          <option value="taunt">Taunt</option><option value="laugh">Laugh</option><option value="bow">Bow</option>
+        </select>
+      </div>
+      <div class="row">
+        <div><div class="name">Emote 3</div></div>
+        <select data-setting="emote3" aria-label="Emote 3">
+          <option value="wave">Wave</option><option value="gg">GG</option><option value="salute">Salute</option>
+          <option value="taunt">Taunt</option><option value="laugh">Laugh</option><option value="bow">Bow</option>
+        </select>
+      </div>
+      <div class="row">
+        <div><div class="name">Emote 4</div></div>
+        <select data-setting="emote4" aria-label="Emote 4">
+          <option value="wave">Wave</option><option value="gg">GG</option><option value="salute">Salute</option>
+          <option value="taunt">Taunt</option><option value="laugh">Laugh</option><option value="bow">Bow</option>
+        </select>
+      </div>
+    </section>
+
+    <section id="page-friends" class="page narrow" hidden>
+      <h1>Friends</h1>
+      <p class="lead" id="social-lead">Add friends by their Blade name. You need a Blade server running to use friends and chat.</p>
+      <div class="row">
+        <div><label class="name" for="server-url">Server</label><div class="desc" id="social-state">Not connected</div></div>
+        <input id="server-url" type="text" data-setting="serverUrl" placeholder="http://localhost:3000" spellcheck="false">
+        <button id="social-connect" class="btn primary" type="button">Connect</button>
+      </div>
+      <div class="search">
+        <input id="friend-name" type="text" maxlength="16" placeholder="Add a friend by name" spellcheck="false" autocomplete="off">
+        <button id="friend-add" class="btn" type="button">Send request</button>
+      </div>
+      <h2>Requests <span id="request-count"></span></h2>
+      <div id="friend-requests"></div>
+      <h2>Friends <span id="friend-count"></span></h2>
+      <div id="friend-list"></div>
+      <p id="friends-status" class="small"></p>
+    </section>
+
+    <section id="page-chat" class="page chat" hidden>
+      <div class="chatbar">
+        <h1>Chat</h1>
+        <select id="chat-channel" aria-label="Channel"></select>
+      </div>
+      <div id="chat-log" class="log chatlog" tabindex="0" aria-live="polite" aria-label="Messages"></div>
+      <div class="search">
+        <input id="chat-input" type="text" maxlength="256" placeholder="Message" spellcheck="false" autocomplete="off">
+        <button id="chat-send" class="btn primary" type="button">Send</button>
+      </div>
+      <p id="chat-status" class="small"></p>
+    </section>
+
+    <section id="page-client" class="page narrow" hidden>
+      <h1>Client settings</h1>
+      <p class="lead">How the launcher itself behaves.</p>
+      <div class="row">
+        <div><div class="name">Theme</div><div class="desc">Blade is the classic look. Crimson fades red into black. Abyss fades black into red.</div></div>
+        <select data-setting="theme" aria-label="Theme">
+          <option value="blade">Blade</option><option value="crimson">Crimson fade</option><option value="abyss">Abyss fade</option>
+        </select>
+      </div>
+      <div class="row">
+        <div><div class="name">BladeSMP address</div><div class="desc">The Join BladeSMP button on the Play page connects here. Use localhost:25565 if you run the server on this computer.</div></div>
+        <input type="text" data-setting="smpAddress" placeholder="play.example.com" spellcheck="false" aria-label="BladeSMP address">
+      </div>
+      <div class="row">
+        <div><div class="name">Visual effects</div><div class="desc">Floating embers and glow animations. Turn off on slow computers.</div></div>
+        <input class="switch" type="checkbox" data-setting="effects" aria-label="Visual effects">
+      </div>
+      <div class="row">
+        <div><div class="name">Memory</div><div class="desc">Maximum RAM the game can use.</div></div>
+        <select data-setting="ramGb" data-number aria-label="Memory">
+          <option value="2">2 GB</option><option value="3">3 GB</option><option value="4">4 GB</option>
+          <option value="6">6 GB</option><option value="8">8 GB</option><option value="12">12 GB</option><option value="16">16 GB</option>
+        </select>
+      </div>
+      <div class="row">
+        <div><label class="name" for="java-path">Java path</label><div class="desc">Leave empty and Blade downloads the right Java for each version.</div></div>
+        <input id="java-path" type="text" data-setting="javaPath" placeholder="Automatic" spellcheck="false">
+      </div>
+      <div class="row">
+        <div><div class="name">Minimize when the game starts</div></div>
+        <input class="switch" type="checkbox" data-setting="minimizeOnLaunch" aria-label="Minimize when the game starts">
+      </div>
+      <div class="row">
+        <div><div class="name">Show snapshots</div></div>
+        <input class="switch" type="checkbox" data-setting="showSnapshots" aria-label="Show snapshots">
+      </div>
+      <div class="row">
+        <div><div class="name">Show old alpha and beta versions</div></div>
+        <input class="switch" type="checkbox" data-setting="showOld" aria-label="Show old alpha and beta versions">
+      </div>
+      <div class="row">
+        <div><div class="name">Game folder</div><div class="desc">Saves, screenshots, and options for the selected version.</div></div>
+        <button id="open-folder" class="btn" type="button">Open folder</button>
+      </div>
+      <p id="client-status" class="small"></p>
+    </section>
+
+    <section id="page-logs" class="page wide" hidden>
+      <div class="logbar">
+        <h1>Logs</h1>
+        <div class="actions">
+          <label class="check"><input id="log-follow" class="switch" type="checkbox" checked> Follow</label>
+          <button id="log-copy" class="btn" type="button">Copy</button>
+          <button id="log-clear" class="btn" type="button">Clear</button>
+        </div>
+      </div>
+      <div id="log" class="log" tabindex="0" aria-label="Launcher and game log"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

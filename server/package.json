@@ -1,0 +1,7 @@
+{
+  "name": "blade-social-server",
+  "version": "0.1.0",
+  "description": "Chat and friends server for the Blade client",
+  "main": "server.js",
+  "scripts": { "start": "node server.js", "test": "node test.js" }
+}

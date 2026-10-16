@@ -1,0 +1,14 @@
+name: BladeSMP
+version: ${version}
+main: dev.blade.smp.BladeSmp
+api-version: '1.21'
+description: The Blade. Everyone starts with a black blade that grows stronger with every 5 kills.
+commands:
+  blade:
+    description: Blade admin commands
+    usage: /blade <give|level|reload> ...
+    permission: bladesmp.admin
+permissions:
+  bladesmp.admin:
+    description: Use /blade commands
+    default: op

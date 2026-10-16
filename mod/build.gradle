@@ -1,0 +1,51 @@
+plugins {
+    id 'fabric-loom' version '1.13-SNAPSHOT'
+}
+
+// Pick the Minecraft version with -Pmc=1.21.4 (default), 1.21.1 or 1.21.11.
+// Each version has its own file in versions/ and its own small compat/ folder.
+def mc = project.findProperty('mc') ?: '1.21.4'
+def vf = file("versions/${mc}.properties")
+if (!vf.exists()) throw new GradleException("Unsupported Minecraft version ${mc}. Look in the versions/ folder.")
+def vp = new Properties()
+vf.withInputStream { vp.load(it) }
+
+version = "${project.mod_version}+${mc}"
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir "compat/${mc}/java"
+            srcDir "compat/${vp.getProperty('compat')}/java"
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${mc}"
+    mappings "net.fabricmc:yarn:${vp.getProperty('yarn')}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${vp.getProperty('fabric_api')}"
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "mc", mc
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version, "mc": mc
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
